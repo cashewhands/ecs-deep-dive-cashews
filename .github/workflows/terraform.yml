@@ -168,6 +168,7 @@ jobs:
           terraform plan -no-color -input=false -out tf.plan -var-file='./configs/${{ inputs.environment }}.tfvars'
         continue-on-error: false
 
+
       - name: Terraform Test - CheckOV (soft)
         id: checkov-soft
         if: ${{ inputs.checkov_soft }}
