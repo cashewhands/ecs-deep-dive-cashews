@@ -2,6 +2,13 @@ resource "aws_vpc" "default" {
   cidr_block = "10.32.0.0/16"
 }
 
+resource "aws_flow_log" "default" {
+  iam_role_arn    = "arn"
+  log_destination = "log"
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.default.id
+}
+
 resource "aws_subnet" "public" {
   count                   = 2
   cidr_block              = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
@@ -15,6 +22,7 @@ resource "aws_subnet" "private" {
   cidr_block        = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
   availability_zone = data.aws_availability_zones.available_zones.names[count.index]
   vpc_id            = aws_vpc.default.id
+  map_public_ip_on_launch = false
 }
 
 resource "aws_internet_gateway" "gateway" {
@@ -57,12 +65,14 @@ resource "aws_route_table_association" "private" {
 
 resource "aws_security_group" "lb" {
   name   = "example-alb-security-group"
-  vpc_id = aws_vpc.default.id
+  description = "Allow inbound traffic to Elastic from VPC CIDR"
+  vpc_id = aws_vpc.default
 
   ingress {
     protocol    = "tcp"
     from_port   = 80
     to_port     = 80
+    description = "Allow loadbalancers access"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -70,6 +80,7 @@ resource "aws_security_group" "lb" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
+    description = "Enable egress on port 80"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -78,6 +89,8 @@ resource "aws_lb" "default" {
   name            = "example-lb"
   subnets         = aws_subnet.public.*.id
   security_groups = [aws_security_group.lb.id]
+  enable_deletion_protection = true
+  drop_invalid_header_fields = true
 }
 
 resource "aws_lb_target_group" "hello_world" {
@@ -86,6 +99,11 @@ resource "aws_lb_target_group" "hello_world" {
   protocol    = "HTTP"
   vpc_id      = aws_vpc.default.id
   target_type = "ip"
+
+  health_check {
+    path = "/api/1/resolve/default?path=/service/ecs-deep-dive" 
+    matcher = "200"  # has to be HTTP 200 or fails
+  }
 }
 
 resource "aws_lb_listener" "hello_world" {
@@ -95,7 +113,13 @@ resource "aws_lb_listener" "hello_world" {
 
   default_action {
     target_group_arn = aws_lb_target_group.hello_world.id
-    type             = "forward"
+    type             = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
 
@@ -146,6 +170,10 @@ DEFINITION
 
 resource "aws_ecs_cluster" "main" {
   name = "example-cluster"
+  setting {
+   name  = "containerInsights"
+   value = "enabled"
+ }
 }
 
 resource "aws_ecs_service" "hello_world" {
