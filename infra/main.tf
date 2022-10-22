@@ -115,7 +115,7 @@ resource "aws_route_table_association" "private" {
 resource "aws_security_group" "lb" {
   name        = "example-alb-security-group"
   description = "Allow inbound traffic to Elastic from VPC CIDR"
-  vpc_id      = aws_vpc.default
+  vpc_id      = aws_vpc.default.id
 
   ingress {
     protocol    = "tcp"
