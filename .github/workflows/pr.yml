@@ -1,0 +1,20 @@
+name: "Pull Request"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy-infrastructure:
+    name: "Terraform - Plan Infrastructure"
+    uses: ./.github/workflows/terraform.yml
+    with:
+      environment: "development"
+      deployment: false
+    secrets:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      WORKSPACE_BASE: ${{ secrets.WORKSPACE_BASE }}
+      CI_GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
