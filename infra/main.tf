@@ -2,6 +2,10 @@ resource "aws_vpc" "default" {
   cidr_block = "10.32.0.0/16"
 }
 
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.default.id
+}
+
 resource "aws_flow_log" "default" {
   iam_role_arn         = aws_iam_role.example.arn
   log_destination      = aws_s3_bucket.default.arn
@@ -11,7 +15,31 @@ resource "aws_flow_log" "default" {
 }
 
 resource "aws_s3_bucket" "default" {
+ #checkov:skip=CKV_AWS_19:Data stored in the S3 bucket is not securely encrypted at rest
+ #checkov:skip=CKV_AWS_28: Will add to this later
+ #checkov:skip=CKV_AWS_145: Will add to this later
+ #checkov:skip=CKV_AWS_18: Ensure AWS access logging is enabled on S3 buckets
+ #checkov:skip=CKV_AWS_144: No need for cross-region replication
   bucket = "cashewhands_s3_bucket"
+
+  versioning {
+    enabled    = true
+  }
+
+  server_side_encryption_configuration {
+   rule {
+       apply_server_side_encryption_by_default {
+         sse_algorithm = "AES256"
+       }
+   }
+   }
+}
+
+resource "aws_s3_bucket_public_access_block" "default" {
+  bucket = aws_s3_bucket.default.id
+
+  block_public_acls   = true
+  block_public_policy = true
 }
 
 resource "aws_iam_role" "example" {
@@ -59,6 +87,7 @@ EOF
 }
 
 resource "aws_subnet" "public" {
+  #checkov:skip=CKV_AWS_130: allow automatice public 1p assignment for testing
   count                   = 2
   cidr_block              = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
   availability_zone       = data.aws_availability_zones.available_zones.names[count.index]
@@ -113,6 +142,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_security_group" "lb" {
+  #checkov:skip=CKV_AWS_260: allow ingress from 0.0.0.0/0 to port 80 for testing
   name        = "example-alb-security-group"
   description = "Allow inbound traffic to Elastic from VPC CIDR"
   vpc_id      = aws_vpc.default.id
@@ -135,6 +165,8 @@ resource "aws_security_group" "lb" {
 }
 
 resource "aws_lb" "default" {
+  #checkov:skip=CKV2_AWS_28: Ensure public facing ALB are protected
+  #checkov:skip=CKV_AWS_91: No need for access log
   name                       = "example-lb"
   subnets                    = aws_subnet.public.*.id
   security_groups            = [aws_security_group.lb.id]
@@ -180,6 +212,7 @@ resource "aws_security_group" "hello_world_task" {
     protocol        = "tcp"
     from_port       = 3000
     to_port         = 3000
+    description     = "Allow"
     security_groups = [aws_security_group.lb.id]
   }
 
@@ -187,6 +220,7 @@ resource "aws_security_group" "hello_world_task" {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
+    description = "Deny"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
