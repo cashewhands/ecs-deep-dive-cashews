@@ -169,6 +169,12 @@ jobs:
         run: |
           terraform plan -no-color -input=false -out tf.plan -var-file='./configs/${{ inputs.environment }}.tfvars'
         continue-on-error: false
+        shell: bash
+
+      - name: Terraform Show
+        id: show
+        run: terraform show -no-color tf.plan 2>&1 > /tmp/plan.txt
+        shell: bash
 
 
       - name: Terraform Test - CheckOV (soft)
