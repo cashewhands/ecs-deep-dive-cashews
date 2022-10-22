@@ -2,7 +2,7 @@ resource "aws_vpc" "default" {
   cidr_block = "10.32.0.0/16"
 }
 
-resource "aws_subnet" "public_subnet" {
+resource "aws_subnet" "public" {
   count                   = 2
   cidr_block              = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
   availability_zone       = data.aws_availability_zones.available_zones.names[count.index]
@@ -10,7 +10,7 @@ resource "aws_subnet" "public_subnet" {
   map_public_ip_on_launch = true
 }
 
-resource "aws_subnet" "private_subnet" {
+resource "aws_subnet" "private" {
   count             = 2
   cidr_block        = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
   availability_zone = data.aws_availability_zones.available_zones.names[count.index]
@@ -31,6 +31,12 @@ resource "aws_eip" "gateway" {
   count      = 2
   vpc        = true
   depends_on = [aws_internet_gateway.gateway]
+}
+
+resource "aws_nat_gateway" "gateway" {
+  count         = 2
+  subnet_id     = element(aws_subnet.public.*.id, count.index)
+  allocation_id = element(aws_eip.gateway.*.id, count.index)
 }
 
 resource "aws_route_table" "private" {
