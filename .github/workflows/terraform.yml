@@ -1,0 +1,7 @@
+# Reusable workflow
+name: "Terraform"
+defaults:
+  run:
+    working-directory: infra/
+
+    
