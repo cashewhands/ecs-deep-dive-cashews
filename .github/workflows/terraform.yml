@@ -246,19 +246,19 @@ jobs:
           path: |
             tf.plan
 
-      - name: Terraform Apply
-        if: ${{ inputs.deployment }}
-        run: terraform apply -auto-approve -input=false -var-file='./configs/${{ inputs.environment }}.tfvars'
+      # - name: Terraform Apply
+      #   if: ${{ inputs.deployment }}
+      #   run: terraform apply -auto-approve -input=false -var-file='./configs/${{ inputs.environment }}.tfvars'
 
-      - name: Commit back
-        if: ${{ inputs.commit_back }}
-        run: |
-          git config --global user.name "Terraform Bot"
-          git config --global user.email "devops@seccl.tech"
+      # - name: Commit back
+      #   if: ${{ inputs.commit_back }}
+      #   run: |
+      #     git config --global user.name "Terraform Bot"
+      #     git config --global user.email "devops@seccl.tech"
 
-          git add ${{ inputs.commit_filter }}
-          git commit -m "Commit back action outputs." || true
-          git push
+      #     git add ${{ inputs.commit_filter }}
+      #     git commit -m "Commit back action outputs." || true
+      #     git push
 
 
   # terraform-deploy:
