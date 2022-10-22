@@ -149,7 +149,9 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: |
+          ../.github/scripts/terraform_workspace_init.sh
+          terraform init
 
       - name: Terraform Format
         id: fmt
