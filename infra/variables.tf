@@ -4,8 +4,8 @@ variable "environment" {
 }
 
 variable "app_count" {
-  type = number
-  default = 1
+  type        = number
+  default     = 1
   description = "Number of resource created."
 }
 

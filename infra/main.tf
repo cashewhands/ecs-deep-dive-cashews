@@ -1,36 +1,36 @@
 resource "aws_vpc" "default" {
-    cidr_block = "10.32.0.0/16"
+  cidr_block = "10.32.0.0/16"
 }
 
 resource "aws_subnet" "public_subnet" {
-    count = 2
-    cidr_block = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
-    availability_zone = data.aws_availability_zones.available_zones.names[count.index]
-    vpc_id = aws_vpc.default.id
-    map_public_ip_on_launch = true
+  count                   = 2
+  cidr_block              = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
+  availability_zone       = data.aws_availability_zones.available_zones.names[count.index]
+  vpc_id                  = aws_vpc.default.id
+  map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "private_subnet" {
-    count = 2
-    cidr_block = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
-    availability_zone = data.aws_availability_zones.available_zones.names[count.index]
-    vpc_id = aws_vpc.default.id
+  count             = 2
+  cidr_block        = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
+  availability_zone = data.aws_availability_zones.available_zones.names[count.index]
+  vpc_id            = aws_vpc.default.id
 }
 
 resource "aws_internet_gateway" "gateway" {
-    vpc_id = aws_vpc.default.id
+  vpc_id = aws_vpc.default.id
 }
 
 resource "aws_route" "internet_access" {
-    route_table_id = aws_vpc.default.main_route_table_id
-    destination_cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.gateway.id    
+  route_table_id         = aws_vpc.default.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.gateway.id
 }
 
 resource "aws_eip" "gateway" {
-    count = 2
-    vpc = true
-    depends_on = [aws_internet_gateway.gateway]
+  count      = 2
+  vpc        = true
+  depends_on = [aws_internet_gateway.gateway]
 }
 
 resource "aws_route_table" "private" {
@@ -38,7 +38,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.default.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = element(aws_nat_gateway.gateway.*.id, count.index)
   }
 }
@@ -50,8 +50,8 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_security_group" "lb" {
-  name        = "example-alb-security-group"
-  vpc_id      = aws_vpc.default.id
+  name   = "example-alb-security-group"
+  vpc_id = aws_vpc.default.id
 
   ingress {
     protocol    = "tcp"
@@ -61,9 +61,9 @@ resource "aws_security_group" "lb" {
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -94,8 +94,8 @@ resource "aws_lb_listener" "hello_world" {
 }
 
 resource "aws_security_group" "hello_world_task" {
-  name        = "example-task-security-group"
-  vpc_id      = aws_vpc.default.id
+  name   = "example-task-security-group"
+  vpc_id = aws_vpc.default.id
 
   ingress {
     protocol        = "tcp"
