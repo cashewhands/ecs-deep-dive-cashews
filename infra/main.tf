@@ -38,8 +38,10 @@ resource "aws_s3_bucket" "default" {
 resource "aws_s3_bucket_public_access_block" "default" {
   bucket = aws_s3_bucket.default.id
 
-  block_public_acls   = true
-  block_public_policy = true
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_iam_role" "example" {
@@ -205,8 +207,9 @@ resource "aws_lb_listener" "hello_world" {
 }
 
 resource "aws_security_group" "hello_world_task" {
-  name   = "example-task-security-group"
-  vpc_id = aws_vpc.default.id
+  name        = "example-task-security-group"
+  description = "Allow inbound traffic to ECS from VPC CIDR"
+  vpc_id      = aws_vpc.default.id
 
   ingress {
     protocol        = "tcp"
