@@ -18,10 +18,10 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  count             = 2
-  cidr_block        = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
-  availability_zone = data.aws_availability_zones.available_zones.names[count.index]
-  vpc_id            = aws_vpc.default.id
+  count                   = 2
+  cidr_block              = cidrsubnet(aws_vpc.default.cidr_block, 8, count.index)
+  availability_zone       = data.aws_availability_zones.available_zones.names[count.index]
+  vpc_id                  = aws_vpc.default.id
   map_public_ip_on_launch = false
 }
 
@@ -64,9 +64,9 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_security_group" "lb" {
-  name   = "example-alb-security-group"
+  name        = "example-alb-security-group"
   description = "Allow inbound traffic to Elastic from VPC CIDR"
-  vpc_id = aws_vpc.default
+  vpc_id      = aws_vpc.default
 
   ingress {
     protocol    = "tcp"
@@ -86,9 +86,9 @@ resource "aws_security_group" "lb" {
 }
 
 resource "aws_lb" "default" {
-  name            = "example-lb"
-  subnets         = aws_subnet.public.*.id
-  security_groups = [aws_security_group.lb.id]
+  name                       = "example-lb"
+  subnets                    = aws_subnet.public.*.id
+  security_groups            = [aws_security_group.lb.id]
   enable_deletion_protection = true
   drop_invalid_header_fields = true
 }
@@ -101,8 +101,8 @@ resource "aws_lb_target_group" "hello_world" {
   target_type = "ip"
 
   health_check {
-    path = "/api/1/resolve/default?path=/service/ecs-deep-dive" 
-    matcher = "200"  # has to be HTTP 200 or fails
+    path    = "/api/1/resolve/default?path=/service/ecs-deep-dive"
+    matcher = "200" # has to be HTTP 200 or fails
   }
 }
 
@@ -171,9 +171,9 @@ DEFINITION
 resource "aws_ecs_cluster" "main" {
   name = "example-cluster"
   setting {
-   name  = "containerInsights"
-   value = "enabled"
- }
+    name  = "containerInsights"
+    value = "enabled"
+  }
 }
 
 resource "aws_ecs_service" "hello_world" {
