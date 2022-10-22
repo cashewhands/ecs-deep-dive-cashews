@@ -4,4 +4,242 @@ defaults:
   run:
     working-directory: infra/
 
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      commit_back:
+        required: false
+        type: boolean
+        default: false
+      commit_filter:
+        required: false
+        type: string
+        default: "*"
+      deployment:
+        required: false
+        default: false
+        type: boolean
+      terraform_version:
+        required: false
+        default: "latest"
+        type: string
+      checkov_soft:
+        required: false
+        default: false
+        type: boolean
+
+    secrets:
+      WORKSPACE_BASE:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      TF_API_TOKEN:
+        required: true
+      
+
+jobs:
+  readiness:
+    name: "Readiness Checks"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: /
+    steps:
+      - name: "Verify workspace name has been updated."
+        env:
+          WORKSPACE_BASE: ${{ secrets.WORKSPACE_BASE }}
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+        run: |
+          if [ -z "$WORKSPACE_BASE" ]
+          then
+            echo "Create the WORKSPACE_BASE Secret." | tee $GITHUB_STEP_SUMMARY
+            exit 255
+          elif [ -z "$TF_API_TOKEN" ]
+          then
+            echo "Create the TF_API_TOKEN Secret." | tee $GITHUB_STEP_SUMMARY
+            exit 255
+          fi
+
+  fmt:
+    name: "Auto Format Terraform"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [readiness]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Terraform Format
+        run: |
+          terraform fmt
+          git config --global user.name "Terraform Bot"
+          git config --global user.email "devops@cashewhands.tech"
+
+          git add *.tf
+          git commit -m "auto-format terraform" || true
+          git push
+
+  generateDocs:
+    name: "Generate Terraform Documentation"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    needs: [readiness, fmt]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Render terraform docs inside the README.md and push changes back to PR branch
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+          working-dir: infra/
+          output-file: README.md
+          output-method: inject
+          git-push: "true"
+
+  terraform:
+    name: "Run Terraform"
+    runs-on: ubuntu-latest
+    concurrency: terraform
+    environment: ${{ inputs.environment }}
+    
+    needs: [readiness]
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      TF_WORKSPACE: ${{ secrets.WORKSPACE_BASE }}-${{ inputs.environment }}
+      WORKSPACE_BASE: ${{ secrets.WORKSPACE_BASE }}
+      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+          terraform_wrapper: true
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+
+      - name: Include extra files (environment dependent) - mainly test resources
+        env:
+          extras_folder: extra/${{ inputs.environment }}
+        run: |
+          if [ -d $extras_folder ]
+          then
+            cp $extras_folder/*.tf .
+          fi
+
+      - name: Install CheckOV
+        run: pip install -U checkov --quiet
+
+      - name: Terraform Init
+        id: init
+        run: |
+          ../.github/scripts/terraform_workspace_init.sh
+          terraform init
+
+      - name: Terraform Format
+        id: fmt
+        if: github.event_name != 'pull_request'
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -no-color -input=false -out tf.plan -var-file='./configs/${{ inputs.environment }}.tfvars'
+        continue-on-error: false
+
+      - name: Terraform Test - CheckOV (soft)
+        id: checkov-soft
+        if: ${{ inputs.checkov_soft }}
+        continue-on-error: true
+        run: |
+          # generate step summary
+          echo '### Test Results :rocket:' | tee $GITHUB_STEP_SUMMARY
+
+          # scan project terraform
+          checkov -d . --quiet | tee $GITHUB_STEP_SUMMARY
+
+          # scan modules
+          checkov -d .terraform --quiet | tee $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Test - CheckOV (hard)
+        id: checkov-hard
+        if: ${{ !inputs.checkov_soft }}
+        run: |
+          # generate step summary
+          echo '### Test Results :rocket:' | tee $GITHUB_STEP_SUMMARY
+          # scan project terraform
+          checkov -d . --quiet | tee $GITHUB_STEP_SUMMARY
+
+          # scan modules
+          checkov -d .terraform --quiet | tee $GITHUB_STEP_SUMMARY
+
+      - uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.CI_GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Plan for ${{ inputs.environment }}
+            ---
+            #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: ${{ inputs.deployment }}
+        run: terraform apply -auto-approve -input=false -var-file='./configs/${{ inputs.environment }}.tfvars'
+
+      - name: Commit back
+        if: ${{ inputs.commit_back }}
+        run: |
+          git config --global user.name "Terraform Bot"
+          git config --global user.email "devops@seccl.tech"
+
+          git add ${{ inputs.commit_filter }}
+          git commit -m "Commit back action outputs." || true
+          git push
+
+
     

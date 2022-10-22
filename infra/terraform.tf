@@ -6,4 +6,13 @@ terraform {
       version = "~> 4.0"
     }
   }
+
+  cloud {
+    organization = "Cashewhands"
+    workspaces {
+      tags = [
+        "ecs-deep-dive",
+      ]
+    }
+  }
 }
