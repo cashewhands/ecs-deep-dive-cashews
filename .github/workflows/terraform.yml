@@ -235,7 +235,8 @@ jobs:
       #         repo: context.repo.repo,
       #         body: output
       #       })
-      - uses: actions/github-script@v6
+      - name: Display on PR
+        uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         with:
           github-token: ${{ inputs.GITHUB_TOKEN }}
