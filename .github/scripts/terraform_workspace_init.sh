@@ -4,7 +4,7 @@
 ## Don't continue on error
 set -e
 
-TF_ORGANISATION=${TF_ORGANISATION:-cashewhands}
+TF_ORGANISATION=${TF_ORGANISATION:-Cashewhands}
 
 if [[ -z $TF_WORKSPACE ]]; then
   echo "TF_WORKSPACE not set"
