@@ -99,30 +99,30 @@ jobs:
       - name: Render terraform docs inside the README.md and push changes back to PR branch
         uses: terraform-docs/gh-actions@v1.0.0
         with:
-          working-dir: infra/
+          working-dir: .
           output-file: README.md
           output-method: inject
           git-push: "true"
 
-  terraform:
-    name: "Run Terraform"
+  terraform-build:
+    name: "Terraform Build"
     runs-on: ubuntu-latest
-    concurrency: terraform
-    environment: ${{ inputs.environment }}
-    
     needs: [readiness]
+    outputs:
+      date: |
+        ${{ steps.date.outputs.date }}
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       TF_WORKSPACE: ${{ secrets.WORKSPACE_BASE }}-${{ inputs.environment }}
-      WORKSPACE_BASE: ${{ secrets.WORKSPACE_BASE }}
-      CI_GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
     steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H_%M_%S')"
+
       - name: Checkout
         uses: actions/checkout@v3
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -149,9 +149,7 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: |
-          ../.github/scripts/terraform_workspace_init.sh
-          terraform init
+        run: terraform init
 
       - name: Terraform Format
         id: fmt
@@ -174,32 +172,33 @@ jobs:
         continue-on-error: true
         run: |
           # generate step summary
-          echo '### Test Results :rocket:' | tee $GITHUB_STEP_SUMMARY
+          echo '### Test Results :rocket:' >> $GITHUB_STEP_SUMMARY
 
           # scan project terraform
-          checkov -d . --quiet | tee $GITHUB_STEP_SUMMARY
+          checkov -d . --quiet >> $GITHUB_STEP_SUMMARY
 
           # scan modules
-          checkov -d .terraform --quiet | tee $GITHUB_STEP_SUMMARY
+          checkov -d .terraform --quiet >> $GITHUB_STEP_SUMMARY
 
       - name: Terraform Test - CheckOV (hard)
         id: checkov-hard
         if: ${{ !inputs.checkov_soft }}
+        continue-on-error: false
         run: |
           # generate step summary
-          echo '### Test Results :rocket:' | tee $GITHUB_STEP_SUMMARY
+          echo '### Test Results :rocket:' >> $GITHUB_STEP_SUMMARY
           # scan project terraform
-          checkov -d . --quiet | tee $GITHUB_STEP_SUMMARY
+          checkov -d . --quiet >> $GITHUB_STEP_SUMMARY
 
           # scan modules
-          checkov -d .terraform --quiet | tee $GITHUB_STEP_SUMMARY
+          checkov -d .terraform --quiet >> $GITHUB_STEP_SUMMARY
 
       - uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
-          github-token: ${{ secrets.CI_GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = `#### Terraform Plan for ${{ inputs.environment }}
             ---
@@ -229,16 +228,52 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: "Terraform_Plan_${{ steps.date.outputs.date }}"
+          path: |
+            tf.plan
+
+  terraform-deploy:
+    name: "Terraform Deploy"
+    runs-on: ubuntu-latest
+    if: ${{ inputs.deployment }}
+    environment: ${{ inputs.environment }}
+    needs: [terraform-build]
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
+      TF_WORKSPACE: ${{ secrets.WORKSPACE_BASE }}-${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download Terraform Plan from terraform-build job
+        uses: actions/download-artifact@v3
+        with:
+          name: "Terraform_Plan_${{ needs.terraform-build.outputs.date }}"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+          terraform_wrapper: true
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
       - name: Terraform Apply
-        if: ${{ inputs.deployment }}
-        run: terraform apply -auto-approve -input=false -var-file='./configs/${{ inputs.environment }}.tfvars'
+        run: terraform apply -input=false tf.plan
 
       - name: Commit back
         if: ${{ inputs.commit_back }}
         run: |
           git config --global user.name "Terraform Bot"
           git config --global user.email "devops@seccl.tech"
-
           git add ${{ inputs.commit_filter }}
           git commit -m "Commit back action outputs." || true
           git push
