@@ -116,7 +116,7 @@ jobs:
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       TF_WORKSPACE: ${{ secrets.WORKSPACE_BASE }}-${{ inputs.environment }}
       WORKSPACE_BASE: ${{ secrets.WORKSPACE_BASE }}
-      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CI_GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
