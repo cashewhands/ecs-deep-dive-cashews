@@ -3,10 +3,59 @@ resource "aws_vpc" "default" {
 }
 
 resource "aws_flow_log" "default" {
-  iam_role_arn    = "arn"
-  log_destination = "log"
+  iam_role_arn    = aws_iam_role.example.arn
+  log_destination = aws_s3_bucket.default.arn
+  log_destination_type = "s3"
   traffic_type    = "ALL"
   vpc_id          = aws_vpc.default.id
+}
+
+resource "aws_s3_bucket" "default" {
+  bucket = "cashewhands_s3_bucket"
+}
+
+resource "aws_iam_role" "example" {
+  name = "ecs-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "vpc-flow-logs.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "example" {
+  name = "ecs-policy"
+  role = aws_iam_role.example.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
 }
 
 resource "aws_subnet" "public" {
