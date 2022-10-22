@@ -40,6 +40,8 @@ on:
         required: false
       TF_API_TOKEN:
         required: true
+      CI_GITHUB_TOKEN:
+        required: false
       
 
 jobs:
