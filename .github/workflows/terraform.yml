@@ -48,7 +48,9 @@ jobs:
   readiness:
     name: "Readiness Checks"
     runs-on: ubuntu-latest
-    
+    defaults:
+      run:
+        working-directory: infra/
     steps:
       - name: "Verify workspace name has been updated."
         env:
