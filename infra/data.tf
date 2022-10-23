@@ -3,7 +3,7 @@ data "aws_availability_zones" "available_zones" {
 }
 
 data "template_file" "env_vars" {
-  template = file("env_vars.json")
+  template = file("./env_vars.json")
 }
 
 data "aws_iam_policy_document" "assume_role_policy" {
