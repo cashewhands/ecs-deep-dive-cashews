@@ -29,7 +29,7 @@ resource "aws_security_group" "load_balancer_sg" {
 }
 
 resource "aws_security_group" "service_security_group" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id      = aws_vpc.vpc.id
   description = "ECS Service security group"
 
   ingress {

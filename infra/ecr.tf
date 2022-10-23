@@ -8,6 +8,6 @@ resource "aws_ecr_repository" "ecr" {
   }
 
   encryption_configuration {
-   encryption_type = "KMS"
+    encryption_type = "KMS"
   }
 }
