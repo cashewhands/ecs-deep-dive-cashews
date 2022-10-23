@@ -1,3 +1,8 @@
+# sg.tf | Security Groups Configuration
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.ok_vpc.id
+}
+
 resource "aws_security_group" "load_balancer_sg" {
   #checkov:skip=CKV_AWS_260: allow ingress from 0.0.0.0/0 to port 80 for testing
   name        = "alb-sg"
@@ -25,6 +30,7 @@ resource "aws_security_group" "load_balancer_sg" {
 
 resource "aws_security_group" "service_security_group" {
   vpc_id = aws_vpc.vpc.id
+  description = "ECS Service security group"
 
   ingress {
     from_port       = 0
