@@ -25,13 +25,13 @@ resource "aws_lb_target_group" "target_group" {
     protocol            = "HTTP"
     matcher             = "200"
     timeout             = "3"
-    path                = "/v1/status"
+    path                = "/v1/healthcheck"
     unhealthy_threshold = "2"
   }
 }
 
 resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_lb.application_load_balancer.arn
+  load_balancer_arn = aws_lb.application_load_balancer.id
   port              = "80"
   protocol          = "HTTP"
 
@@ -44,5 +44,19 @@ resource "aws_lb_listener" "listener" {
       protocol    = "HTTPS"
       status_code = "HTTP_301"
     }
+  }
+}
+
+resource "aws_lb_listener" "listener-https" {
+  load_balancer_arn = aws_lb.application_load_balancer.id
+  port              = "443"
+  protocol          = "HTTPS"
+
+  ssl_policy      = "ELBSecurityPolicy-2016-08"
+  certificate_arn = "<certificate-arn>"
+
+  default_action {
+    target_group_arn = aws_lb_target_group.target_group.id
+    type             = "forward"
   }
 }
