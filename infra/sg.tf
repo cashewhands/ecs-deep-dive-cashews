@@ -1,6 +1,6 @@
 # sg.tf | Security Groups Configuration
 resource "aws_default_security_group" "default" {
-  vpc_id = aws_vpc.ok_vpc.id
+  vpc_id = aws_vpc.vpc.id
 }
 
 resource "aws_security_group" "load_balancer_sg" {
