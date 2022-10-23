@@ -46,7 +46,7 @@ resource "aws_ecs_task_definition" "ecs-task" {
   cpu                      = "256"
   execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
   task_role_arn            = aws_iam_role.ecsTaskExecutionRole.arn
-  
+  depends_on               = [aws_cloudwatch_log_group.log-group]
 }
 
 resource "aws_cloudwatch_log_group" "log-group" {
