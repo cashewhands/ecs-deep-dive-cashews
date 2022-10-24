@@ -48,16 +48,16 @@ resource "aws_lb_listener" "listener" {
   }
 }
 
-/* resource "aws_lb_listener" "listener-https" {
+resource "aws_lb_listener" "listener-https" {
   load_balancer_arn = aws_lb.application_load_balancer.id
   port              = "443"
   protocol          = "HTTPS"
 
-  ssl_policy      = "ELBSecurityPolicy-2016-08"
-  certificate_arn = "<certificate-arn>"
+  ssl_policy = "ELBSecurityPolicy-2016-08"
+
 
   default_action {
     target_group_arn = aws_lb_target_group.target_group.id
     type             = "forward"
   }
-} */
+}
