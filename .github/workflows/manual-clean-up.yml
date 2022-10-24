@@ -10,10 +10,6 @@ on:
       environment:
         required: true
         type: string
-      deployment:
-        required: false
-        default: false
-        type: boolean
 
    secrets:
       WORKSPACE_BASE:
@@ -24,10 +20,8 @@ on:
         required: false
       TF_API_TOKEN:
         required: true
-      CI_GITHUB_TOKEN:
-        required: false
+     
       
-
 jobs:
  destroy-infrastructure:
    runs-on: ubuntu-latest
