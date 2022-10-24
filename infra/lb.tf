@@ -53,7 +53,9 @@ resource "aws_lb_listener" "listener-https" {
   port              = "443"
   protocol          = "HTTPS"
 
-  ssl_policy = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  ssl_policy      = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn = "arn:aws:iam::012119841372:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
+
 
 
   default_action {
