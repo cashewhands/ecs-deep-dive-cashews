@@ -46,12 +46,12 @@ resource "aws_ecs_task_definition" "ecs-task" {
   cpu                      = "256"
   execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
   /* task_role_arn            = aws_iam_role.ecsTaskExecutionRole.arn */
-  depends_on               = [aws_cloudwatch_log_group.log-group]
+  depends_on = [aws_cloudwatch_log_group.log-group]
 }
 
 resource "aws_cloudwatch_log_group" "log-group" {
   #checkov:skip=CKV_AWS_158: Ensure that CloudWatch Log Group is encrypted by KMS
-  
+
   name = "${var.app_name}-${var.environment}-logs"
 
   retention_in_days = 90
