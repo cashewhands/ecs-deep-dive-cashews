@@ -56,4 +56,4 @@ jobs:
 
      - name: Terraform destroy
        id: destroy
-       run: terraform destroy  "destroy.tfplan"
+       run: terraform apply  "destroy.tfplan"
