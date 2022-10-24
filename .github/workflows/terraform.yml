@@ -124,7 +124,7 @@ jobs:
       - name: Get current date
         id: date
         run: |
-            date=$(date +'%Y-%m-%dT%H_%M_%S)
+            date=$(date +'%Y-%m-%dT%H_%M_%S')
             echo "date=${date}" >> $GITHUB_OUTPUT
 
       - name: Setup Terraform
