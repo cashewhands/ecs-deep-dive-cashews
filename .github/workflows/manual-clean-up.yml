@@ -46,9 +46,9 @@ jobs:
        id: init
        run: terraform init 
       
-     - name: Show Destroy plan
-       run: terraform plan -destroy -out=destroy.tfplan 
-       continue-on-error: true
+    #  - name: Show Destroy plan
+    #    run: terraform plan -destroy -out=destroy.tfplan 
+    #    continue-on-error: true
 
      - name: Terraform destroy
        id: destroy
