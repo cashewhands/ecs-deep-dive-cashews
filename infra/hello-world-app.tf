@@ -15,7 +15,9 @@ resource "aws_lb_target_group" "hello_world" {
     path                = "/v1/status"
     unhealthy_threshold = "2"
   }
+  depends_on = [aws_lb.application_load_balancer]
 }
+
 
 resource "aws_lb_listener" "hello_world" {
   load_balancer_arn = aws_lb.application_load_balancer.id
@@ -32,6 +34,7 @@ resource "aws_lb_listener" "hello_world" {
       status_code = "HTTP_301"
     }
   }
+  depends_on = [aws_lb.application_load_balancer]
 }
 
 resource "aws_security_group" "hello_world_task" {
@@ -51,7 +54,7 @@ resource "aws_security_group" "hello_world_task" {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    description = "Deny"
+    description = "Outbound"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
