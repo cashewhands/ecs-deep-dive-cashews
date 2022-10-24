@@ -5,17 +5,17 @@ resource "aws_lb_target_group" "hello_world" {
   protocol    = "HTTP"
   vpc_id      = aws_vpc.vpc.id
   target_type = "ip"
-
+  depends_on  = [aws_lb.application_load_balancer]
   health_check {
     healthy_threshold   = "3"
     interval            = "300"
     protocol            = "HTTP"
-    matcher             = "200"
+    matcher             = "200-202"
     timeout             = "3"
-    path                = "/v1/status"
+    path                = "/health"
     unhealthy_threshold = "2"
   }
-  depends_on = [aws_lb.application_load_balancer]
+
 }
 
 
@@ -33,7 +33,6 @@ resource "aws_lb_listener" "hello_world" {
       status_code = "HTTP_301"
     }
   }
-  depends_on = [aws_lb.application_load_balancer]
 }
 
 resource "aws_security_group" "hello_world_task" {
@@ -101,6 +100,4 @@ resource "aws_ecs_service" "hello_world" {
     container_name   = "hello-world-app"
     container_port   = 3000
   }
-
-  depends_on = [aws_lb_listener.hello_world]
 }
