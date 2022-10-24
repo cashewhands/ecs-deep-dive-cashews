@@ -32,12 +32,12 @@ resource "aws_lb_target_group" "target_group" {
 }
 
 resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_lb.application_load_balancer.id
+  load_balancer_arn = aws_lb.application_load_balancer.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_lb_target_group.target_group.id
+    target_group_arn = aws_lb_target_group.target_group.arn
     type             = "redirect"
 
     redirect {
@@ -59,7 +59,7 @@ resource "aws_lb_listener" "listener-https" {
 
 
   default_action {
-    target_group_arn = aws_lb_target_group.target_group.id
+    target_group_arn = aws_lb_target_group.target_group.arn
     type             = "forward"
   }
 }
