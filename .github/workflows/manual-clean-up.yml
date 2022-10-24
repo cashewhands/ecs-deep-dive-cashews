@@ -11,15 +11,15 @@ on:
         required: true
         type: string
 
-  #  secrets:
-  #     WORKSPACE_BASE:
-  #       required: true
-  #     AWS_ACCESS_KEY_ID:
-  #       required: false
-  #     AWS_SECRET_ACCESS_KEY:
-  #       required: false
-  #     TF_API_TOKEN:
-  #       required: true
+   secrets:
+      WORKSPACE_BASE:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      TF_API_TOKEN:
+        required: true
      
       
 jobs:
@@ -34,7 +34,10 @@ jobs:
        uses: actions/checkout@v3
      
      - name: Setup Terraform
-       uses: hashicorp/setup-terraform@v1
+       uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: true
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
      - name: Display structure of downloaded files
        run: ls -R
