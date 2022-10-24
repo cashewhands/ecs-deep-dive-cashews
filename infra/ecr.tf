@@ -1,4 +1,4 @@
-resource "aws_ecr_repository" "ecr" {
+/* resource "aws_ecr_repository" "ecr" {
   name = "${var.app_name}-${var.environment}-ecr"
 
   image_tag_mutability = "IMMUTABLE"
@@ -10,4 +10,4 @@ resource "aws_ecr_repository" "ecr" {
   encryption_configuration {
     encryption_type = "KMS"
   }
-}
+} */
