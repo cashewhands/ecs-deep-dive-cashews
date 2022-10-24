@@ -46,7 +46,7 @@ jobs:
        uses: hashicorp/setup-terraform@v1
 
      - name: Display structure of downloaded files
-        run: ls -R
+       run: ls -R
 
      - name: Terraform Init
        id: init
