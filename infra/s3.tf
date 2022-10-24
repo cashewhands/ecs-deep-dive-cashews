@@ -5,7 +5,7 @@ resource "aws_s3_bucket" "default" {
   #checkov:skip=CKV_AWS_18: Ensure AWS access logging is enabled on S3 buckets
   #checkov:skip=CKV_AWS_144: No need for cross-region replication
   bucket = "cashewhands-s3-bucket"
-
+  force_destroy = true
   versioning {
     enabled = true
   }

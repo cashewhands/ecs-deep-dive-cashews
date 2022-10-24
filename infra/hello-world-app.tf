@@ -20,12 +20,11 @@ resource "aws_lb_target_group" "hello_world" {
 
 
 resource "aws_lb_listener" "hello_world" {
-  load_balancer_arn = aws_lb.application_load_balancer.id
+  load_balancer_arn = aws_lb.application_load_balancer.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_lb_target_group.hello_world.id
     type             = "redirect"
 
     redirect {
@@ -93,12 +92,12 @@ resource "aws_ecs_service" "hello_world" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    security_groups = [aws_security_group.hello_world_task.id]
+    security_groups = [aws_security_group.hello_world_task.arn]
     subnets         = aws_subnet.private.*.id
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.hello_world.id
+    target_group_arn = aws_lb_target_group.hello_world.arn
     container_name   = "hello-world-app"
     container_port   = 3000
   }
