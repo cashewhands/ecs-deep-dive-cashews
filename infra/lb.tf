@@ -8,7 +8,7 @@ resource "aws_lb" "application_load_balancer" {
   subnets            = aws_subnet.public.*.id
   security_groups    = [aws_security_group.load_balancer_sg.id]
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
   drop_invalid_header_fields = true
 }
 
