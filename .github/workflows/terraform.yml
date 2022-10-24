@@ -285,7 +285,10 @@ jobs:
         with:
           name: "Terraform_Plan_${{ steps.date.outputs.date }}"
           path: |
-            tf.plan
+            infra/tf.plan
+
+      - name: Display structure of downloaded files
+        run: ls -R
 
       # - name: Terraform Apply
       #   if: ${{ inputs.deployment }}
