@@ -8,7 +8,7 @@ resource "aws_ecs_cluster" "ecs-cluster" {
   }
 }
 
-resource "aws_ecs_task_definition" "ecs-task" {
+/* resource "aws_ecs_task_definition" "ecs-task" {
   family = "${var.app_name}-task"
 
   container_definitions = <<DEFINITION
@@ -47,7 +47,7 @@ resource "aws_ecs_task_definition" "ecs-task" {
   execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
   /* task_role_arn            = aws_iam_role.ecsTaskExecutionRole.arn */
   depends_on = [aws_cloudwatch_log_group.log-group]
-}
+} */
 
 resource "aws_cloudwatch_log_group" "log-group" {
   #checkov:skip=CKV_AWS_158: Ensure that CloudWatch Log Group is encrypted by KMS
@@ -57,7 +57,7 @@ resource "aws_cloudwatch_log_group" "log-group" {
   retention_in_days = 90
 }
 
-data "aws_ecs_task_definition" "main" {
+/* data "aws_ecs_task_definition" "main" {
   task_definition = aws_ecs_task_definition.ecs-task.family
 }
 
@@ -86,4 +86,4 @@ resource "aws_ecs_service" "ecs-service" {
   }
 
   depends_on = [aws_lb_listener.listener]
-}
+} */
