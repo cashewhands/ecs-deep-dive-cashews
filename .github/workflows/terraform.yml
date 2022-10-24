@@ -343,9 +343,9 @@ jobs:
         id: init
         run: terraform init
 
-      # - name: Terraform Apply
-      #   if: ${{ inputs.deployment }}
-      #   run: terraform apply -input=false tf.plan
+      - name: Terraform Apply
+        if: ${{ inputs.deployment }}
+        run: terraform apply -input=false tf.plan
 
       - name: Commit back
         if: ${{ inputs.commit_back }}
