@@ -25,7 +25,7 @@ resource "aws_lb_listener" "hello_world" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "redirect"
+    type = "redirect"
 
     redirect {
       port        = "443"
