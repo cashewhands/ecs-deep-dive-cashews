@@ -21,6 +21,7 @@ on:
 jobs:
  destroy-infrastructure:
    runs-on: ubuntu-latest
+   if: github.ref == 'refs/heads/main'
    defaults:
      run:
        shell: bash
@@ -47,7 +48,7 @@ jobs:
        run: terraform init 
       
      - name: Show Destroy plan
-       run: terraform plan -destroy -out destroy.tfplan 
+       run: terraform plan -destroy -out destroy.tfplan -var-file='./configs/${{ inputs.environment }}.tfvars'
        continue-on-error: true
 
      - name: Display structure to include tfplan
