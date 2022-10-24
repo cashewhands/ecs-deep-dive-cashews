@@ -51,7 +51,6 @@ resource "aws_ecs_cluster" "ecs-cluster" {
 
 resource "aws_cloudwatch_log_group" "log-group" {
   #checkov:skip=CKV_AWS_158: Ensure that CloudWatch Log Group is encrypted by KMS
-
   name = "${var.app_name}-${var.environment}-logs"
 
   retention_in_days = 90
