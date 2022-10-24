@@ -11,15 +11,15 @@ on:
         required: true
         type: string
 
-   secrets:
-      WORKSPACE_BASE:
-        required: true
-      AWS_ACCESS_KEY_ID:
-        required: false
-      AWS_SECRET_ACCESS_KEY:
-        required: false
-      TF_API_TOKEN:
-        required: true
+  #  secrets:
+  #     WORKSPACE_BASE:
+  #       required: true
+  #     AWS_ACCESS_KEY_ID:
+  #       required: false
+  #     AWS_SECRET_ACCESS_KEY:
+  #       required: false
+  #     TF_API_TOKEN:
+  #       required: true
      
       
 jobs:
@@ -28,9 +28,6 @@ jobs:
    env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      TF_WORKSPACE: ${{ secrets.WORKSPACE_BASE }}-${{ inputs.environment }}
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-      WORKSPACE_BASE: ${{ secrets.WORKSPACE_BASE }}
       AWS_REGION: 'us-west-1'
    steps:
      - name: Checkout
