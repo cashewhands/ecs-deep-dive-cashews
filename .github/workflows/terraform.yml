@@ -327,6 +327,9 @@ jobs:
         with:
           name: "Terraform_Plan_${{ needs.terraform-build.outputs.date }}"
 
+      - name: Display structure of downloaded files
+        run: ls -R
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -338,9 +341,9 @@ jobs:
         id: init
         run: terraform init
 
-      - name: Terraform Apply
-        if: ${{ inputs.deployment }}
-        run: terraform apply -input=false tf.plan
+      # - name: Terraform Apply
+      #   if: ${{ inputs.deployment }}
+      #   run: terraform apply -input=false tf.plan
 
       - name: Commit back
         if: ${{ inputs.commit_back }}
