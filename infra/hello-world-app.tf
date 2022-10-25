@@ -98,8 +98,9 @@ resource "aws_security_group" "hello_world_sg" {
 
 resource "aws_ecs_service" "hello_world" {
   name            = "hello-world-service"
+  iam_role        = aws_iam_role.ecsTaskExecutionRole.name
   cluster         = aws_ecs_cluster.ecs-cluster.id
-  task_definition = aws_ecs_task_definition.hello_world.arn
+  task_definition = aws_ecs_task_definition.hello_world.family
   desired_count   = var.app_count
   launch_type     = "FARGATE"
 
