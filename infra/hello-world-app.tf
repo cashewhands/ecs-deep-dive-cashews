@@ -104,7 +104,6 @@ resource "aws_ecs_service" "hello_world" {
 
   network_configuration {
     security_groups = [
-      aws_security_group.hello_world_task.arn,
       aws_security_group.load_balancer_sg.arn
     ]
     assign_public_ip = false
