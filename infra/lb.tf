@@ -13,7 +13,7 @@ resource "aws_lb" "application_load_balancer" {
   drop_invalid_header_fields = true
 }
 
-resource "aws_lb_target_group" "target_group" {
+/* resource "aws_lb_target_group" "target_group" {
   name        = "${var.app_name}-${var.environment}-tg"
   port        = 80
   protocol    = "HTTP"
@@ -46,7 +46,7 @@ resource "aws_lb_listener" "listener" {
       status_code = "HTTP_301"
     }
   }
-}
+} */
 
 /* resource "aws_lb_listener" "listener-https" {
   load_balancer_arn = aws_lb.application_load_balancer.id
