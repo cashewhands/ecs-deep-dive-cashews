@@ -35,6 +35,7 @@ resource "aws_route_table" "private" {
   }
 }
 
+
 resource "aws_route_table_association" "private" {
   count          = length(var.private_subnets)
   subnet_id      = element(aws_subnet.private.*.id, count.index)
