@@ -48,7 +48,7 @@ resource "aws_lb_listener" "listener" {
   }
 }
 
-resource "aws_lb_listener" "listener-https" {
+/* resource "aws_lb_listener" "listener-https" {
   load_balancer_arn = aws_lb.application_load_balancer.id
   port              = "443"
   protocol          = "HTTPS"
@@ -62,4 +62,4 @@ resource "aws_lb_listener" "listener-https" {
     target_group_arn = aws_lb_target_group.target_group.arn
     type             = "forward"
   }
-}
+} */

@@ -1,5 +1,5 @@
 # hello-world-app.tf | Hello-World-App Configuration
-/* resource "aws_lb_target_group" "hello_world" {
+resource "aws_lb_target_group" "hello_world" {
   name        = "hw-tg"
   port        = 80
   protocol    = "HTTP"
@@ -16,7 +16,7 @@
     unhealthy_threshold = "2"
   }
 
-} */
+}
 
 resource "aws_lb_listener" "hello_world" {
   load_balancer_arn = aws_lb.application_load_balancer.arn
@@ -95,7 +95,7 @@ resource "aws_ecs_service" "hello_world" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.hello_world.arn
     container_name   = "hello-world-app"
     container_port   = 3000
   }
