@@ -15,7 +15,6 @@ resource "aws_lb_target_group" "hello_world" {
     path                = "/health"
     unhealthy_threshold = "2"
   }
-
 }
 
 resource "aws_lb_listener" "hello_world" {
@@ -31,28 +30,6 @@ resource "aws_lb_listener" "hello_world" {
       protocol    = "HTTPS"
       status_code = "HTTP_301"
     }
-  }
-}
-
-resource "aws_security_group" "hello_world_task" {
-  name        = "hw-task-sg"
-  description = "Allow inbound traffic to ECS from VPC CIDR"
-  vpc_id      = aws_vpc.vpc.id
-
-  ingress {
-    protocol        = "tcp"
-    from_port       = 3000
-    to_port         = 3000
-    description     = "Allow"
-    security_groups = [aws_security_group.load_balancer_sg.id]
-  }
-
-  egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    description = "Outbound"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -82,6 +59,28 @@ resource "aws_ecs_task_definition" "hello_world" {
 DEFINITION
 }
 
+resource "aws_security_group" "hello_world_task" {
+  name        = "hw-task-sg"
+  description = "Allow inbound traffic to ECS from VPC CIDR"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    protocol        = "tcp"
+    from_port       = 3000
+    to_port         = 3000
+    description     = "Allow"
+    security_groups = [aws_security_group.load_balancer_sg.id]
+  }
+
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    description = "Outbound"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_ecs_service" "hello_world" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.ecs-cluster.id
@@ -90,8 +89,12 @@ resource "aws_ecs_service" "hello_world" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    security_groups = [aws_security_group.hello_world_task.arn]
-    subnets         = aws_subnet.private.*.id
+    security_groups = [
+      aws_security_group.hello_world_task.arn,
+      aws_security_group.load_balancer_sg.arn
+    ]
+    assign_public_ip = false
+    subnets          = aws_subnet.private.*.id
   }
 
   load_balancer {
@@ -99,4 +102,5 @@ resource "aws_ecs_service" "hello_world" {
     container_name   = "hello-world-app"
     container_port   = 3000
   }
+  depends_on = [aws_lb_listener.hello_world]
 }
