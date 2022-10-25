@@ -15,7 +15,7 @@ variable "app_name" {
 
 variable "app_count" {
   type        = number
-  default     = 3
+  default     = 1
   description = "Number of resource created."
 }
 
