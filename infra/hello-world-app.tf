@@ -6,6 +6,7 @@ resource "aws_lb_target_group" "hello_world" {
   vpc_id      = aws_vpc.vpc.id
   target_type = "ip"
   depends_on  = [aws_lb.application_load_balancer]
+
   health_check {
     healthy_threshold   = "3"
     interval            = "300"
@@ -73,7 +74,7 @@ resource "aws_ecs_task_definition" "hello_world" {
 DEFINITION
 }
 
-resource "aws_security_group" "hello_world_task" {
+resource "aws_security_group" "hello_world_sg" {
   name        = "hw-task-sg"
   description = "Allow inbound traffic to ECS from VPC CIDR"
   vpc_id      = aws_vpc.vpc.id
@@ -104,7 +105,7 @@ resource "aws_ecs_service" "hello_world" {
 
   network_configuration {
     security_groups = [
-      aws_security_group.hello_world_task.arn
+      aws_security_group.hello_world_sg.id
     ]
     assign_public_ip = false
     subnets          = aws_subnet.private.*.id
