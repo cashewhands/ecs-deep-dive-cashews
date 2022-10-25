@@ -3,6 +3,7 @@ resource "aws_lb" "application_load_balancer" {
   #checkov:skip=CKV2_AWS_28: Ensure public facing ALB are protected
   #checkov:skip=CKV_AWS_150:deletion protection disabled for a reason
   #checkov:skip=CKV_AWS_91: No need for access log
+  #checkov:skip=CKV2_AWS_20:Do not need loadbalance to be TLS1.2
   name               = "${var.app_name}-${var.environment}-alb"
   internal           = false
   load_balancer_type = "application"
