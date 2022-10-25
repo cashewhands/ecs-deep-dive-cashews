@@ -34,6 +34,7 @@ resource "aws_lb_target_group" "hello_world" {
 } */
 
 resource "aws_lb_listener" "hello_world" {
+  #checkov:skip=CKV_AWS_2:ALB protocol is not HTTPS
   #checkov:skip=CKV2_AWS_20:Do not need loadbalancer to be TLS1.2
   #checkov:skip=CKV_AWS_103:Do not need ALB protocol to be https
   load_balancer_arn = aws_lb.application_load_balancer.arn
