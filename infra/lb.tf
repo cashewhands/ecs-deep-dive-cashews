@@ -6,8 +6,9 @@ resource "aws_lb" "application_load_balancer" {
   name               = "${var.app_name}-${var.environment}-alb"
   internal           = false
   load_balancer_type = "application"
-  subnets            = aws_subnet.public.*.id
-  security_groups    = [aws_security_group.load_balancer_sg.id]
+  /* subnets            = aws_subnet.public.*.id */
+  subnets         = [for subnet in aws_subnet.public : subnet.id]
+  security_groups = [aws_security_group.load_balancer_sg.id]
 
   enable_deletion_protection = false
   drop_invalid_header_fields = true
