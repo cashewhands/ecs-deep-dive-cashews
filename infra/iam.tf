@@ -32,7 +32,7 @@ EOF
 
 resource "aws_iam_role_policy" "vpc-fl" {
   name = "flow-log-policy"
-  role = aws_iam_role.vpc-fl-role.id
+  role = aws_iam_role.vpc-fl.id
 
   policy = <<EOF
 {
