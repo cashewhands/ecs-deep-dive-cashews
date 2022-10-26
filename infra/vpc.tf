@@ -7,8 +7,8 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_flow_log" "vpc-fl" {
-  iam_role_arn         = aws_iam_role.example.arn
-  log_destination      = aws_s3_bucket.default.arn
+  iam_role_arn         = aws_iam_role.vpc-fl.arn
+  log_destination      = aws_s3_bucket.vpc-fl-bucket.arn
   log_destination_type = "s3"
   traffic_type         = "ALL"
   vpc_id               = aws_vpc.vpc.id
