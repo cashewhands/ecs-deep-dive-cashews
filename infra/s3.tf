@@ -1,10 +1,10 @@
-resource "aws_s3_bucket" "default" {
+resource "aws_s3_bucket" "vpc-fl-bucket" {
   #checkov:skip=CKV_AWS_19:Data stored in the S3 bucket is not securely encrypted at rest
   #checkov:skip=CKV_AWS_28: Will add to this later
   #checkov:skip=CKV_AWS_145: Will add to this later
   #checkov:skip=CKV_AWS_18: Ensure AWS access logging is enabled on S3 buckets
   #checkov:skip=CKV_AWS_144: No need for cross-region replication
-  bucket        = "cashewhands-s3-bucket"
+  bucket        = "cashewhands-vpc-fl-s3-bucket"
   force_destroy = true
   versioning {
     enabled = true
@@ -19,8 +19,8 @@ resource "aws_s3_bucket" "default" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "default" {
-  bucket = aws_s3_bucket.default.id
+resource "aws_s3_bucket_public_access_block" "vpc-fl-bucket" {
+  bucket = aws_s3_bucket.vpc-fl-bucket.id
 
   block_public_acls       = true
   block_public_policy     = true

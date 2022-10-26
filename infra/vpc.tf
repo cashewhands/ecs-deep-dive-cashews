@@ -6,7 +6,7 @@ resource "aws_vpc" "vpc" {
   enable_dns_hostnames = true
 }
 
-resource "aws_flow_log" "default" {
+resource "aws_flow_log" "vpc-fl" {
   iam_role_arn         = aws_iam_role.example.arn
   log_destination      = aws_s3_bucket.default.arn
   log_destination_type = "s3"
