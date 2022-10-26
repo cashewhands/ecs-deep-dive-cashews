@@ -11,7 +11,7 @@ resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_policy" {
 }
 
 resource "aws_iam_role" "vpc-fl" {
-  name = "vpc-fl-role"
+  name = "cashewhands-vpc-fl"
 
   assume_role_policy = <<EOF
 {
@@ -32,7 +32,7 @@ EOF
 
 resource "aws_iam_role_policy" "vpc-fl" {
   name = "flow-log-policy"
-  role = aws_iam_role.vpc-fl.id
+  role = aws_iam_role.vpc-fl-role.id
 
   policy = <<EOF
 {
