@@ -344,7 +344,7 @@ jobs:
         run: terraform init
 
       - name: Terraform Apply
-        if: ${{ inputs.deployment }}
+        if: ${{ inputs.deployment }} && github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -input=false tf.plan
 
       - name: Call terraform output
