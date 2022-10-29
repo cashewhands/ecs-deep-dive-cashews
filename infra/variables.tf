@@ -26,7 +26,7 @@ variable "default_tags" {
 
 variable "vpc_cidr" {
   description = "The CIDR block of the VPC"
-  type = string
+  type        = string
 }
 
 variable "public_subnets" {
