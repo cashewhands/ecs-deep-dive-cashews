@@ -7,7 +7,7 @@ data "aws_subnets" "filtered_public" {
 
   filter {
     name   = "${var.app_name}-vpc-id"
-    values = [aws_vpc.vpc.*.id]
+    values = [aws_vpc.vpc.id]
   }
 
   filter {
