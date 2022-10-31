@@ -3,7 +3,7 @@ data "aws_availability_zones" "available_zones" {
 }
 
 data "aws_subnets" "filtered_public" {
-  for_each = toset(data.aws_availability_zones.availability_zones.zone_ids)
+  for_each = toset(data.aws_availability_zones.available_zones.zone_ids)
 
   filter {
     name   = "${var.app_name}-vpc-id"
