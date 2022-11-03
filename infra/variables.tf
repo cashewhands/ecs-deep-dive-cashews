@@ -1,11 +1,11 @@
 variable "region" {
   type        = string
-  description = "AWS Region"
+  description = "The AWS Region"
 }
 
 variable "environment" {
   type        = string
-  description = "Environment the deployment is targetting."
+  description = "The deployment environment"
 }
 
 variable "app_name" {
@@ -24,15 +24,17 @@ variable "default_tags" {
   description = "Default tags to apply to all resources"
 }
 
-variable "cidr" {
-  description = "The CIDR block for the VPC"
-  default     = "10.20.0.0/16"
+variable "vpc_cidr" {
+  description = "The CIDR block of the VPC"
+  type        = string
 }
 
 variable "public_subnets" {
-  description = "List of public subnets"
+  type        = list(string)
+  description = "The CIDR block for the public subnet"
 }
 
 variable "private_subnets" {
-  description = "List of private subnets"
+  type        = list(string)
+  description = "The CIDR block for the private subnet"
 }
